@@ -1,0 +1,117 @@
+using UnityEngine;
+
+public class Seat : MonoBehaviour
+{
+
+	public string SeatID = "S1";
+
+	public string CharacterID = string.Empty;
+
+	public bool IsDriver;
+
+	public bool Active;
+
+	public CharacterDriver passenger;
+
+	private void Start()
+	{
+
+	}
+
+	public void GetIn(CharacterDriver driver)
+	{
+		if ((bool)driver)
+		{
+			Active = true;
+			driver.transform.position = base.transform.position;
+			driver.transform.parent = base.transform;
+			driver.character.controller.enabled = false;
+			driver.DrivingSeat = this;
+			driver.LastSeat = SeatID;
+			passenger = driver;
+		}
+	}
+
+	public void GetOut(CharacterDriver driver)
+	{
+		if ((bool)driver)
+		{
+			Active = false;
+			driver.transform.parent = null;
+			driver.character.controller.enabled = true;
+			driver.DrivingSeat = null;
+			passenger = null;
+		}
+	}
+
+	public void OnSeat(CharacterDriver driver, bool sit)
+	{
+		if ((bool)driver)
+		{
+			if (sit)
+			{
+				Active = true;
+				passenger = driver;
+				driver.character.controller.enabled = false;
+				driver.DrivingSeat = this;
+			}
+			else
+			{
+				driver.transform.parent = null;
+				driver.character.controller.enabled = true;
+				driver.DrivingSeat = null;
+				passenger = null;
+			}
+		}
+	}
+
+	public void CleanSeat()
+	{
+		CharacterDriver[] componentsInChildren = base.transform.GetComponentsInChildren<CharacterDriver>();
+		for (int i = 0; i < componentsInChildren.Length; i++)
+		{
+			if ((bool)componentsInChildren[i])
+			{
+				componentsInChildren[i].transform.parent = null;
+			}
+		}
+		Active = false;
+		passenger = null;
+		Debug.Log(" Clean Seat! " + SeatID);
+	}
+
+	public void CheckSeat()
+	{
+		if (base.transform.childCount <= 0)
+		{
+			Active = false;
+			passenger = null;
+		}
+	}
+
+	private void Update()
+	{
+		if ((bool)passenger)
+		{
+			CharacterID = passenger.character.ID;
+		}
+		else
+		{
+			Active = false;
+		}
+		CheckSeat();
+	}
+
+	private void FixedUpdate()
+	{
+		if ((bool)passenger)
+		{
+			passenger.transform.position = base.transform.position;
+			passenger.transform.parent = base.transform;
+		}
+	}
+
+	private void OnDrawGizmos()
+	{
+	}
+}
